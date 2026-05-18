@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>X-RAY Platform - Anatomy Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #0A84FF; --green: #30D158; --red: #FF453A;
+  --orange: #FF9F0A;
+  --bg: #000000; --glass: rgba(28,28,30,0.80);
+  --glass-border: rgba(255,255,255,0.09); --glass-hover: rgba(10,132,255,0.30);
+  --text: #FFFFFF; --muted: rgba(255,255,255,0.40);
+  --shadow: 0 20px 60px rgba(0,0,0,0.55);
+}
+[data-theme="light"] {
+  --bg: #F2F2F7; --glass: rgba(255,255,255,0.78);
+  --glass-border: rgba(0,0,0,0.07); --glass-hover: rgba(10,132,255,0.25);
+  --text: #000000; --muted: rgba(0,0,0,0.38);
+  --shadow: 0 20px 60px rgba(0,0,0,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse 90% 50% at 50% -5%, rgba(10,132,255,0.28), transparent),
+    radial-gradient(ellipse 40% 30% at 85% 85%, rgba(48,209,88,0.07), transparent);
+  color:var(--text); font-family:'IBM Plex Sans Arabic',sans-serif;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  padding:14px 14px 90px; transition:background .4s,color .4s;
+}
+.dynamic-island {
+  position:fixed; top:12px; left:50%; transform:translateX(-50%);
+  z-index:1000; display:flex; align-items:center; gap:8px;
+  background:#1c1c1e; border-radius:22px; padding:8px 18px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.6); cursor:pointer;
+  text-decoration:none; transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.1); -webkit-tap-highlight-color:transparent;
+}
+.dynamic-island:active{transform:translateX(-50%) scale(0.96);background:#2c2c2e;}
+.dynamic-island .di-icon{width:18px;height:18px;flex-shrink:0;fill:#24A1DE;}
+.dynamic-island .di-text{font-weight:700;font-size:0.82rem;color:#ffffff;letter-spacing:0.5px;white-space:nowrap;}
+
+.glass{background:var(--glass);backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);border:1px solid var(--glass-border);border-radius:22px;box-shadow:var(--shadow);}
+.header{width:min(500px,100%);padding:13px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;margin-top:54px;}
+.logo{font-family:'Space Mono',monospace;font-size:.88rem;font-weight:700;letter-spacing:2px;color:var(--blue);}
+.logo b{color:var(--text);}
+.toggle-row{display:flex;align-items:center;gap:8px;}
+.toggle-lbl{font-size:.62rem;font-weight:700;color:var(--muted);letter-spacing:1px;}
+.ios-sw{width:51px;height:29px;background:#3a3a3c;border-radius:15px;position:relative;cursor:pointer;transition:background .3s;}
+[data-theme="light"] .ios-sw{background:#e5e5ea;}
+.ios-sw::after{content:'';position:absolute;top:3px;left:3px;width:23px;height:23px;background:#fff;border-radius:50%;transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.3);}
+[data-theme="light"] .ios-sw::after{transform:translateX(22px);}
+
+.screen{width:min(500px,100%);display:none;}
+.screen.active{display:block;}
+.sec-label{font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin:20px 0 10px 4px;}
+
+/* Lecture Cards */
+.lec-card{padding:16px 18px;margin-bottom:9px;display:flex;align-items:center;gap:14px;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s,transform .15s,box-shadow .2s;}
+.lec-card:active{transform:scale(0.98);}
+.lec-card:hover{border-color:rgba(10,132,255,0.4);}
+.lec-num{width:44px;height:44px;border-radius:11px;background:rgba(10,132,255,.12);border:1px solid rgba(10,132,255,.22);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;color:var(--blue);flex-shrink:0;}
+.lec-body{flex:1;}
+.lec-name{font-size:.93rem;font-weight:700;margin-bottom:3px;}
+.lec-count{font-size:.72rem;color:var(--muted);}
+.lec-arrow{color:var(--muted);font-size:1.2rem;}
+
+/* Stats badge on cards */
+.lec-badge{font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:8px;background:rgba(48,209,88,0.15);color:var(--green);border:1px solid rgba(48,209,88,0.25);}
+
+/* Progress */
+.progress-wrap{margin-bottom:14px;padding:14px 18px;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.prog-lec{font-size:.72rem;font-weight:700;color:var(--blue);letter-spacing:.5px;}
+.prog-count{font-size:.72rem;color:var(--muted);}
+.prog-bar{height:4px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--blue);border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1);width:0%;}
+
+/* Quiz card */
+.quiz-card{padding:22px 20px;margin-bottom:10px;}
+.q-num{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--muted);margin-bottom:8px;text-align:center;}
+.q-text{font-size:1.0rem;font-weight:700;line-height:1.7;text-align:center;margin-bottom:20px;direction:ltr;}
+
+/* Options */
+.opt{padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1.5px solid var(--glass-border);cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s;direction:ltr;}
+.opt:hover{border-color:rgba(10,132,255,0.4);background:rgba(10,132,255,0.06);}
+.opt-letter{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .2s;}
+.opt-text{font-size:.88rem;font-weight:600;flex:1;}
+.opt.correct{border-color:var(--green);background:rgba(48,209,88,0.12);}
+.opt.correct .opt-letter{background:var(--green);color:#fff;border-color:var(--green);}
+.opt.wrong{border-color:var(--red);background:rgba(255,69,58,0.12);}
+.opt.wrong .opt-letter{background:var(--red);color:#fff;border-color:var(--red);}
+.opt.disabled{cursor:default;pointer-events:none;}
+
+/* Next button */
+.next-btn{width:100%;padding:15px;background:var(--blue);color:#fff;border:none;border-radius:14px;font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;display:none;margin-top:8px;transition:opacity .2s;}
+.next-btn:active{opacity:.8;}
+
+/* Result screen */
+.result-card{padding:30px 24px;text-align:center;margin-bottom:12px;}
+.result-score{font-family:'Space Mono',monospace;font-size:3rem;font-weight:700;color:var(--blue);margin-bottom:8px;}
+.result-label{font-size:1rem;font-weight:700;margin-bottom:4px;}
+.result-sub{font-size:.8rem;color:var(--muted);margin-bottom:24px;}
+.result-grade{font-size:1.4rem;font-weight:800;margin-bottom:20px;}
+.grade-a{color:var(--green);}
+.grade-b{color:var(--blue);}
+.grade-c{color:var(--orange);}
+.grade-d{color:var(--red);}
+.btn-restart{width:100%;padding:14px;background:var(--blue);color:#fff;border:none;border-radius:14px;font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;margin-bottom:10px;}
+.btn-home{width:100%;padding:14px;background:rgba(255,255,255,0.06);color:var(--text);border:1.5px solid var(--glass-border);border-radius:14px;font-family:'IBM Plex Sans Arabic',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;}
+
+/* Back button */
+.back-btn{display:flex;align-items:center;gap:8px;padding:8px 0;margin-bottom:6px;cursor:pointer;color:var(--blue);font-weight:700;font-size:.85rem;background:none;border:none;font-family:'IBM Plex Sans Arabic',sans-serif;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.quiz-card, .lec-card, .result-card{animation:fadeUp .35s ease both;}
+.opt{animation:fadeUp .3s ease both;}
+.opt:nth-child(1){animation-delay:.05s}
+.opt:nth-child(2){animation-delay:.10s}
+.opt:nth-child(3){animation-delay:.15s}
+.opt:nth-child(4){animation-delay:.20s}
+.opt:nth-child(5){animation-delay:.25s}
+</style>
+</head>
+<body data-theme="dark">
+
+<a href="https://t.me/XrayB1" target="_blank" class="dynamic-island">
+  <svg class="di-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+  <span class="di-text">قناة X-RAY على التليجرام</span>
+</a>
+
+<div class="header glass">
+  <div class="logo">X<b>-RAY</b> <span style="color:var(--muted);font-size:.7rem;letter-spacing:1px;">PLATFORM</span></div>
+  <div class="toggle-row">
+    <span class="toggle-lbl">MODE</span>
+    <div class="ios-sw" onclick="toggleMode()"></div>
+  </div>
+</div>
+
+<!-- Home Screen -->
+<div id="screen-home" class="screen active">
+  <div class="sec-label">المحاضرات المتاحة</div>
+  <div id="lectures-list"></div>
+</div>
+
+<!-- Quiz Screen -->
+<div id="screen-quiz" class="screen">
+  <button class="back-btn" onclick="goHome()">← العودة للمحاضرات</button>
+  <div class="progress-wrap glass">
+    <div class="prog-top">
+      <span class="prog-lec" id="prog-lec-name">جاري التحميل...</span>
+      <span class="prog-count" id="prog-count">0/0</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  </div>
+  <div class="quiz-card glass">
+    <div class="q-num" id="q-num"></div>
+    <div class="q-text" id="q-text"></div>
+    <div id="opts-wrap"></div>
+    <button id="next-btn" class="next-btn" onclick="nextQuestion()">السؤال التالي ←</button>
+  </div>
+</div>
+
+<!-- Result Screen -->
+<div id="screen-result" class="screen">
+  <div class="result-card glass">
+    <div class="result-score" id="res-score">0/0</div>
+    <div class="result-label">نتيجتك النهائية</div>
+    <div class="result-sub" id="res-lec-name"></div>
+    <div class="result-grade" id="res-grade"></div>
+    <button class="btn-restart" onclick="restartQuiz()">🔄 إعادة المحاضرة</button>
+    <button class="btn-home" onclick="goHome()">🏠 العودة للرئيسية</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// بيانات الأسئلة — مقسّمة حسب المحاضرة
+// ============================================================
+const QUESTIONS_DATA = [
+  {
+    id: 1,
+    name: "المحاضرة الأولى",
+    nameEn: "Lecture 1 — Skull Bones",
+    questions: [
+      { q: "The skull is composed of:", opts: ["20 bones","21 bones","22 bones","24 bones","26 bones"], ans: 2 },
+      { q: "The base of the skull is described as:", opts: ["The upper part of the cranium","The lowest part of the cranium","A part of the facial skeleton","The cranial cavity","The skull vault"], ans: 1 },
+      { q: "The frontal bone contributes to the:", opts: ["Orbital roofs","Orbital floors","Nasal septum","Zygomatic arch","Hard palate"], ans: 0 },
+      { q: "The squamous of the frontal part is the:", opts: ["Smallest section","Posterior region","Vertical flat part","Nasal surface","Basal plate"], ans: 2 },
+      { q: "The squamous part mainly forms the:", opts: ["Nasal bridge","Cranial floor","Forehead surface","Orbital margin","Cheek border"], ans: 2 },
+      { q: "The orbital part is described as:", opts: ["Vertical section","Posterior plate","Horizontal region","Nasal crest","Occipital ridge"], ans: 2 },
+      { q: "The ethmoid bone is located:", opts: ["Behind the skull","Between the orbits","Below the mandible","Inside the ear","Above the maxilla"], ans: 1 },
+      { q: "The ethmoid bone is described as spongy because it has:", opts: ["Thick compact layers","Dense outer walls","Air pockets and thin plates","Large muscle attachments","Solid bone structure"], ans: 2 },
+      { q: "The cribriform plate separates the:", opts: ["Nasal cavity from orbit","Anterior fossa from nasal cavity","Orbit from maxilla","Skull base from jaw","Sinuses from pharynx"], ans: 1 },
+      { q: "The cribriform plate transmits the:", opts: ["Optic nerves","Facial nerves","Olfactory nerves","Trigeminal nerves","Auditory nerves"], ans: 2 },
+      { q: "The perpendicular plate is located:", opts: ["Above the cribriform plate","Behind the sinuses","Below the cribriform plate","Inside the orbit","Within the maxilla"], ans: 2 },
+      { q: "The number of ethmoidal air cells is generally:", opts: ["1–5 cells","3–18 cells","10–25 cells","20–30 cells","30–40 cells"], ans: 1 },
+      { q: "The nasal conchae of the ethmoid form the:", opts: ["Inferior and middle conchae","Superior and inferior conchae","Superior and middle conchae","Middle and inferior conchae","Nasal septum"], ans: 2 },
+      { q: "The sphenoid bone is located in the:", opts: ["Roof of the orbit","Floor of cranial cavity","Nasal septum","Facial skeleton","Mandibular arch"], ans: 1 },
+      { q: "The hypophyseal fossa is found on the:", opts: ["Inferior surface","Posterior border","Superior surface","Lateral wall","Orbital plate"], ans: 2 },
+      { q: "The anterior and posterior clinoid processes serve for:", opts: ["Muscle attachment","Sinus drainage","Dura mater attachment","Nerve passage","Air filtration"], ans: 2 },
+      { q: "The dorsum sellae forms the:", opts: ["Anterior border","Lateral margin","Posterior boundary","Orbital floor","Nasal septum"], ans: 2 },
+      { q: "The tuberculum sellae is the:", opts: ["Posterior ridge","Front raised edge","Lateral process","Inferior wall","Nasal plate"], ans: 1 },
+      { q: "The pterygoid processes provide:", opts: ["Nerve canals","Sinus spaces","Muscle attachments","Venous drainage","Air chambers"], ans: 2 },
+      { q: "The clivus is located between the:", opts: ["Sella and orbit","Dorsum and magnum","Wings and sinuses","Septum and crest","Conchae and plate"], ans: 1 },
+      { q: "The lesser wings are positioned:", opts: ["Posterior and inferior","Anterior and superior","Lateral and inferior","Medial and posterior","Inferior and medial"], ans: 1 },
+      { q: "The lesser wings form part of the:", opts: ["Cranial floor","Nasal septum","Bony orbit","Hard palate","Foramen magnum"], ans: 2 },
+      { q: "The largest opening in the skull is the:", opts: ["Optic canal","Jugular foramen","Foramen magnum","Carotid canal","Superior fissure"], ans: 2 },
+      { q: "The medulla oblongata passes through the:", opts: ["Optic canal","Foramen magnum","Hypophyseal fossa","Superior fissure","Infraorbital canal"], ans: 1 },
+      { q: "The squamous part of the occipital bone is:", opts: ["Thin posterior portion","Thick anterior plate","Lateral orbital wall","Nasal structure","Sphenoid process"], ans: 0 },
+      { q: "The occipital condyles articulate with the:", opts: ["Axis vertebra","Atlas vertebra","Sphenoid body","Temporal bone","Mandible"], ans: 1 },
+      { q: "The basilar part lies:", opts: ["Behind foramen magnum","Lateral to condyles","In front of foramen","Above squamous part","Within orbit"], ans: 2 },
+      { q: "The external surface of the parietal bone is:", opts: ["Smooth and convex","Rough and concave","Spongy and thin","Perforated by nerves","Part of the nasal septum"], ans: 0 },
+      { q: "The internal surface of the parietal bone:", opts: ["Forms the orbital roof","Is flat and smooth","Moulds to the cerebral hemispheres","Articulates with the sphenoid","Forms the nasal cavity"], ans: 2 },
+      { q: "The sagittal border of the parietal bone articulates with:", opts: ["Frontal bone","Occipital bone","Opposite parietal bone","Temporal bone","Sphenoid bone"], ans: 2 },
+      { q: "The frontal border of the parietal bone articulates with the:", opts: ["Temporal bone","Frontal bone","Occipital bone","Opposite parietal bone","Sphenoid bone"], ans: 1 },
+      { q: "The junction of the sagittal and lambdoid sutures is called the:", opts: ["Bregma","Lambda","Pterion","Asterion","Vertex"], ans: 1 }
+    ]
+  },
+  {
+    id: 2,
+    name: "المحاضرة الثانية",
+    nameEn: "Lecture 2 — Sutures & Cranial Fossae",
+    questions: [
+      { q: "Skull sutures are:", opts: ["Cartilaginous joints of the face","Fibrous joints between skull bones","Synovial joints of the cranium","Ligament connections of the mandible","Muscle attachments of the skull"], ans: 1 },
+      { q: "The coronal suture is located between:", opts: ["Two temporal bones","Occipital and parietal bones","Two parietal bones","Frontal and parietal bones","Sphenoid and frontal bones"], ans: 3 },
+      { q: "The sagittal suture lies between:", opts: ["Frontal and occipital bones","Two parietal bones","Parietal and temporal bones","Two frontal bones","Occipital and temporal bones"], ans: 1 },
+      { q: "Sutures normally fuse when:", opts: ["Brain growth is complete","At the time of birth","During early infancy","At the start of puberty","After tooth eruption"], ans: 0 },
+      { q: "The lambdoid suture connects the bones:", opts: ["Frontal and parietal","Temporal and sphenoid","Two temporal","Occipital and parietal","Frontal and sphenoid"], ans: 3 },
+      { q: "The metopic suture is also called:", opts: ["Squamous suture","Lambdoid suture","Interfrontal suture","Coronal suture","Occipitomastoid suture"], ans: 2 },
+      { q: "The metopic suture:", opts: ["Is present in newborns","Lies between parietal bones","Forms the lambda point","Connects temporal bones","Articulates sphenoid bone"], ans: 0 },
+      { q: "The squamous suture joins:", opts: ["Frontal and parietal bones","Parietal and temporal bones","Two frontal bones","Occipital and sphenoid bones","Sphenoid and occipital bones"], ans: 1 },
+      { q: "The sphenosquamosal suture is between:", opts: ["Frontal and sphenoid bones","Occipital and parietal bones","Parietal and occipital bones","Sphenoid and temporal bones","Two parietal bones"], ans: 3 },
+      { q: "The lambda is the meeting point of:", opts: ["Coronal and sagittal sutures","Squamous and sagittal sutures","Lambdoid and sagittal sutures","Metopic and coronal sutures","Coronal and lambdoid sutures"], ans: 2 },
+      { q: "The cranial cavity floor is divided into:", opts: ["Two cranial depressions","Three cranial fossae","Four cranial spaces","Two cranial chambers","Five cranial regions"], ans: 1 },
+      { q: "The anterior cranial fossa supports:", opts: ["Temporal lobes","Cerebellum","Brainstem","Frontal lobes","Pituitary gland"], ans: 3 },
+      { q: "The anterior cranial fossa is limited posteriorly by:", opts: ["Petrous temporal bone","Dorsum sellae","Sphenoid ridge","Occipital squama","Greater wing of sphenoid"], ans: 2 },
+      { q: "The middle cranial fossa is described as:", opts: ["Oval shaped","Triangular shaped","Circular shaped","Rectangular shaped","Butterfly shaped"], ans: 4 },
+      { q: "The lateral parts of the middle cranial fossa accommodate:", opts: ["Frontal lobes","Brainstem","Temporal lobes","Cerebellum","Occipital lobes"], ans: 2 },
+      { q: "The posterior cranial fossa accommodates:", opts: ["Frontal lobes only","Pituitary gland","Temporal lobes only","Brainstem and cerebellum","Parietal lobes"], ans: 3 },
+      { q: "Town's projection is performed with:", opts: ["20° cranial angulation","45° caudal angulation","30° cranial angulation","No angulation","60° lateral tilt"], ans: 1 },
+      { q: "The SMV view is mainly used to assess:", opts: ["Frontal sinuses","Parietal bones","Skull base and foramina","Nasal septum","Orbital margins"], ans: 2 },
+      { q: "The pituitary fossa is most frequently assessed on:", opts: ["FO30 view","OF20 view","SMV view","Town's view","Lateral view"], ans: 4 },
+      { q: "The normal length of the pituitary fossa on lateral view is:", opts: ["5–8 mm","8–12 mm","11–16 mm","17–22 mm","20–25 mm"], ans: 2 },
+      { q: "The metopic suture normally disappears by:", opts: ["6 months","1 year","2 years","5 years","Puberty"], ans: 2 },
+      { q: "Wormian bones are commonly seen:", opts: ["In the sphenoid sinus","At sutural junctions","In the orbital cavity","Within the sella turcica","In the nasal septum"], ans: 1 },
+      { q: "The parietal convexities of the skull vault may appear:", opts: ["Markedly thickened","Completely opaque","Radiodense only","Radiolucent due to thinning","Absent on imaging"], ans: 3 },
+      { q: "MRI is particularly useful for demonstrating:", opts: ["Bony thickness","Skull fractures","Calcified lesions","Cranial nerve contents","External protuberances"], ans: 3 }
+    ]
+  },
+  {
+    id: 3,
+    name: "المحاضرة الثالثة والرابعة",
+    nameEn: "Lectures 3 & 4 — Facial Skeleton & Orbit",
+    questions: [
+      { q: "The facial skeleton is also known as:", opts: ["Neurocranium","Appendicular skeleton","Axial skeleton","Viscerocranium","Endoskeleton"], ans: 3 },
+      { q: "Which of the following bones is single (unpaired)?", opts: ["Nasal bone","Lacrimal bone","Zygomatic bone","Inferior nasal concha","Vomer bone"], ans: 4 },
+      { q: "The deep surface of the nasal bones is grooved by:", opts: ["Optic nerves","Facial nerves","Olfactory nerves","Anterior ethmoidal nerves","Trigeminal ganglion"], ans: 3 },
+      { q: "The lacrimal bone is:", opts: ["Large triangular bone","Thick irregular bone","Small rectangular bone","Round hollow bone","Long cylindrical bone"], ans: 2 },
+      { q: "The lacrimal bone lies in the:", opts: ["Posterior cranial fossa","Medial orbital wall","Lateral orbital wall","Anteromedial orbit wall","Inferior nasal meatus"], ans: 1 },
+      { q: "The zygomatic bone forms the:", opts: ["Bridge of nose","Nasal septum part","Cheek prominence","Hard palate edge","Orbital roof part"], ans: 2 },
+      { q: "Another name for zygomatic bone:", opts: ["Palatine bone","Malar bone","Vomer bone","Nasal bone","Lacrimal bone"], ans: 1 },
+      { q: "The zygomatic bone articulates with:", opts: ["Frontal maxillary temporal bones","Parietal occipital sphenoid bones","Mandible and nasal bones","Palatine and vomer bones","Ethmoid and lacrimal bones"], ans: 0 },
+      { q: "The anterior end reinforces the:", opts: ["Medial orbital margin","Superior orbital rim","Nasal aperture edge","Lateral orbital margin","Lateral inferior orbital rim"], ans: 4 },
+      { q: "The inferior nasal concha is a:", opts: ["Flat plate bone","Triangular bone","Curved scroll bone","Cylindrical bone","Cubic shaped bone"], ans: 2 },
+      { q: "The vomer forms the:", opts: ["Anterior nasal septum","Posterior nasal septum","Superior septal part","Inferior posterior septum","Lateral nasal wall"], ans: 3 },
+      { q: "The vomer articulates with the:", opts: ["Nasal bone plate","Maxillary process","Frontal sinus wall","Mandibular ramus","Ethmoid perpendicular plate"], ans: 4 },
+      { q: "The left and right maxilla fuse to form the:", opts: ["Nasal septum","Orbital floor","Upper jaw","Hard palate only","Zygomatic arch"], ans: 2 },
+      { q: "The alveolar process of the maxilla:", opts: ["Forms nasal septum part","Supports maxillary teeth","Forms orbital margin","Articulates with vomer","Forms sinus wall"], ans: 1 },
+      { q: "The palatine process of the maxilla forms most of the:", opts: ["Nasal cavity floor","Orbital roof","Hard palate","Nasal septum","Zygomatic arch"], ans: 2 },
+      { q: "The mandible is the only _____ bone in the skull:", opts: ["Paired facial","Cranial base","Movable","Flat facial","Midline cranial"], ans: 2 },
+      { q: "The body of the mandible is shaped like a:", opts: ["Triangle","Circle","Square","Crescent","Horseshoe"], ans: 4 },
+      { q: "The alveolar border of the mandible contains:", opts: ["Nasal openings","Muscle grooves","Sixteen tooth sockets","Sinus cavities","Nerve canals"], ans: 2 },
+      { q: "The mandibular rami project:", opts: ["Downward from body","Forward from chin","Backward from teeth","Medially inward","Upward from angle"], ans: 4 },
+      { q: "The head of the ramus of the mandible articulates with the:", opts: ["Frontal bone","Maxilla bone","Zygomatic bone","Temporal bone","Sphenoid bone"], ans: 3 },
+      { q: "The coronoid process of the mandible provides attachment for the:", opts: ["Masseter muscle","Buccinator muscle","Medial pterygoid","Lateral pterygoid","Temporalis muscle"], ans: 4 },
+      { q: "The palatine bones form the:", opts: ["Anterior part of the hard palate","Posterior part of the hard palate","Lateral orbital rim","Inferior nasal septum","Zygomatic arch"], ans: 1 },
+      { q: "The palatine bones are shaped like:", opts: ["T-shaped","L-shaped","U-shaped","V-shaped","O-shaped"], ans: 1 },
+      { q: "The base of the orbit forms the:", opts: ["Orbital rim","Orbital apex","Medial wall","Floor of nasal cavity","Zygomatic arch"], ans: 0 },
+      { q: "The apex of the orbit contains the:", opts: ["Supraorbital foramen","Optic foramen","Inferior orbital fissure","Infraorbital foramen","Zygomaticofacial foramen"], ans: 1 },
+      { q: "The strongest wall of the orbit is the:", opts: ["Medial wall","Lateral wall","Floor","Roof","Apex"], ans: 1 },
+      { q: "The lateral wall of the orbit is formed anteriorly by:", opts: ["Frontal bone","Zygomatic bone","Maxilla","Palatine bone","Ethmoid bone"], ans: 1 },
+      { q: "The roof of the orbit is formed posteriorly by:", opts: ["Orbital plate of frontal bone","Lesser wing of sphenoid","Greater wing of sphenoid","Maxilla","Zygomatic bone"], ans: 1 },
+      { q: "The medial wall of the orbit is formed mainly by:", opts: ["Lacrimal, maxilla, ethmoid bones","Frontal and sphenoid bones","Zygomatic and palatine bones","Vomer and nasal bones","Temporal and maxilla bones"], ans: 0 },
+      { q: "The thin plate separating orbit from ethmoid air cells is called:", opts: ["Lamina cribrosa","Lamina papyracea","Orbital plate","Infraorbital plate","Zygomatic plate"], ans: 1 },
+      { q: "Any unoccupied space within the orbit is filled with:", opts: ["Air","Orbital fat","Cartilage","Sinus fluid","Muscle only"], ans: 1 },
+      { q: "The most frequent reason for radiological examination of facial bones is:", opts: ["Sinus infection","Trauma to the region","Congenital deformity","Tumor detection","Dental check-up"], ans: 1 },
+      { q: "Low-dose CT is particularly suitable for:", opts: ["Detecting TMJ dislocation","Demonstrating orbital fractures","Assessing nasal septum deviation","Imaging teeth only","Routine sinus evaluation"], ans: 1 },
+      { q: "MRI is most suitable for TMJ because it shows:", opts: ["Bone fractures","Tooth sockets","Internal joint disruption","Orbital floor","Maxillary sinuses"], ans: 2 },
+      { q: "On plain orbital radiographs, the straight line seen through the orbit is called:", opts: ["Lamina papyracea","Innominate line","Infraorbital line","Orbital rim line","Optic canal line"], ans: 1 },
+      { q: "The normal optic foramen diameter is:", opts: ["Less than 7 mm","Less than 5 mm","10 mm","12 mm","More than 15 mm"], ans: 0 },
+      { q: "MRI is more valuable than CT for:", opts: ["Bone fractures","Dental sockets","Soft tissue contents of the orbit","Infraorbital canal only","Orbital rim fractures"], ans: 2 }
+    ]
+  }
+];
+
+// ============================================================
+// State
+// ============================================================
+let currentLec = null;
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+// ============================================================
+// Init
+// ============================================================
+function init() {
+  renderLectureList();
+}
+
+function renderLectureList() {
+  const list = document.getElementById('lectures-list');
+  list.innerHTML = '';
+  QUESTIONS_DATA.forEach((lec, i) => {
+    const card = document.createElement('div');
+    card.className = 'lec-card glass';
+    card.style.animationDelay = `${i * 0.08}s`;
+    card.innerHTML = `
+      <div class="lec-num">L${lec.id}</div>
+      <div class="lec-body">
+        <div class="lec-name">${lec.name}</div>
+        <div class="lec-count">${lec.nameEn} · ${lec.questions.length} سؤال</div>
+      </div>
+      <div class="lec-arrow">›</div>
+    `;
+    card.onclick = () => startLecture(i);
+    list.appendChild(card);
+  });
+}
+
+function startLecture(idx) {
+  currentLec = idx;
+  currentQ = 0;
+  score = 0;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const lec = QUESTIONS_DATA[currentLec];
+  const q = lec.questions[currentQ];
+  const total = lec.questions.length;
+
+  // Progress
+  document.getElementById('prog-lec-name').textContent = lec.name;
+  document.getElementById('prog-count').textContent = `${currentQ + 1}/${total}`;
+  const pct = ((currentQ) / total) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  // Question
+  document.getElementById('q-num').textContent = `سؤال ${currentQ + 1} من ${total}`;
+  document.getElementById('q-text').textContent = q.q;
+
+  // Options
+  const wrap = document.getElementById('opts-wrap');
+  wrap.innerHTML = '';
+  const letters = ['A','B','C','D','E'];
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'opt glass';
+    div.innerHTML = `<div class="opt-letter">${letters[i]}</div><span class="opt-text">${opt}</span>`;
+    div.onclick = () => selectAnswer(i, div);
+    wrap.appendChild(div);
+  });
+
+  // Hide next button
+  const nb = document.getElementById('next-btn');
+  nb.style.display = 'none';
+  answered = false;
+}
+
+function selectAnswer(idx, el) {
+  if (answered) return;
+  answered = true;
+
+  const lec = QUESTIONS_DATA[currentLec];
+  const q = lec.questions[currentQ];
+  const opts = document.querySelectorAll('.opt');
+
+  opts.forEach(o => o.classList.add('disabled'));
+
+  if (idx === q.ans) {
+    score++;
+    el.classList.add('correct');
+  } else {
+    el.classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+  }
+
+  const nb = document.getElementById('next-btn');
+  const isLast = currentQ === lec.questions.length - 1;
+  nb.textContent = isLast ? 'عرض النتيجة ✓' : 'السؤال التالي ←';
+  nb.style.display = 'block';
+}
+
+function nextQuestion() {
+  const lec = QUESTIONS_DATA[currentLec];
+  if (currentQ < lec.questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+    // Animate card
+    const card = document.querySelector('.quiz-card');
+    card.style.animation = 'none';
+    card.offsetHeight;
+    card.style.animation = 'fadeUp .35s ease both';
+  } else {
+    showResult();
+  }
+}
+
+function showResult() {
+  const lec = QUESTIONS_DATA[currentLec];
+  const total = lec.questions.length;
+  const pct = Math.round((score / total) * 100);
+
+  document.getElementById('res-score').textContent = `${score}/${total}`;
+  document.getElementById('res-lec-name').textContent = lec.name + ' — ' + lec.nameEn;
+
+  let grade, cls;
+  if (pct >= 90) { grade = '🏆 ممتاز!'; cls = 'grade-a'; }
+  else if (pct >= 75) { grade = '✅ جيد جداً'; cls = 'grade-b'; }
+  else if (pct >= 60) { grade = '📚 جيد'; cls = 'grade-c'; }
+  else { grade = '⚠️ يحتاج مراجعة'; cls = 'grade-d'; }
+
+  const gradeEl = document.getElementById('res-grade');
+  gradeEl.textContent = grade + ` (${pct}%)`;
+  gradeEl.className = 'result-grade ' + cls;
+
+  // Update progress bar to 100%
+  document.getElementById('prog-fill').style.width = '100%';
+
+  showScreen('screen-result');
+}
+
+function restartQuiz() {
+  startLecture(currentLec);
+}
+
+function goHome() {
+  showScreen('screen-home');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toggleMode() {
+  const body = document.body;
+  const current = body.getAttribute('data-theme');
+  body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+}
+
+init();
+</script>
+</body>
+</html>
